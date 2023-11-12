@@ -1,0 +1,32 @@
+%main script that populates all the parameters neccessary to run the model
+%vehicle properties
+vehProps.m=2050;
+vehProps.Jz=3344;
+vehProps.C1=2*1.6*1e3*180/pi;       % N/rad, per axle
+vehProps.C2=2*.5*1e3*180/pi;        % N/rad, per axle
+vehProps.CMz1=2*0.13*1e3*180/pi;    % Nm/rad, per axle
+vehProps.CMz2=2*0.06*1e3*180/pi;    % Nm/rad, per axle
+vehProps.a=1.064;                   % m,front axle distance
+vehProps.b=1.596;                   %m, rear axle distance
+vehProps.V=80/3.6;                  %m/s, vehicle velocity
+vehProps.footprint.x_fr=a;
+vehProps.footprint.x_fl=a;
+vehProps.footprint.x_rr=-b;
+vehProps.footprint.x_rl=-
+vehProps.footprint.y_fr
+vehProps.footprint.y_fl
+vehProps.footprint.y_rr
+vehProps.footprint.y_rl
+%driver properties
+driverProps.tau=0.15;               %driver lag time constant
+driverProps.Kd=130;                 %Nm/rad - driver gain
+driverProps.La=20;                  %m, look-ahead distance
+%rmpc properties
+rmpcProps.Aieq=[];                  %inequality constraint A matrix
+rmpcProps.Bieq=[];                  %inequality constraint B matrix
+rmpcProps.Aeq=[];                   %equality constraint A matrix
+rmpcProps.Beq=[];                   %equality constraint B matrix
+rmpcProps.lb=[];                    %decision variable lower bound
+rmpcProps.ub=[];                    %decision variable upper bound
+%reference trajectory properties
+load('refTraj.mat');
