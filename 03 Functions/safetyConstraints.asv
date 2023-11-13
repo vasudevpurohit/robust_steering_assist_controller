@@ -42,13 +42,13 @@ function [c,ceq]=safetyConstraints(x0,U,driverProps,vehProps,rmpcProps,refTraj)
     alpha_rr=beta-(b/V)*r;
     %four corners over the horizon
     x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
-    x_fl_horizon=x_fl*cos(psi)-y_fl*sin(psi)+X;
-    x_rr_horizon=x_rr*cos(psi)-y_rr*sin(psi)+X;
-    x_rl_horizon=x_rl*cos(psi)-y_rl*sin(psi)+X;
-    y_fr_horizon=x_fr*sin(psi)+y_fr*cos(psi)+Y;
-    y_fl_horizon=x_fl*sin(psi)+y_fl*cos(psi)+Y;
-    y_rr_horizon=x_rr*sin(psi)+y_rr*cos(psi)+Y;
-    y_rl_horizon=x_rl*sin(psi)+y_rl*cos(psi)+Y;
+    x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
+    x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
+    x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
+    x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
+    x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
+    x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
+    x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
     %creating the c-matrix for inequality constraints
     %no equality constraints
     ceq=[];
