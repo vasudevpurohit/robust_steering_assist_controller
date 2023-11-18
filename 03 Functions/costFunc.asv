@@ -11,7 +11,7 @@ function cost=costFunc(U0,U,rmpcProps)
         N=rmpcProps.N;
         w_deltaU=rmpcProps.w_deltaU;
         w_U=rmpcProps.w_U;
-        w_sv=rmpcProps.w_sv;
+%         w_sv=rmpcProps.w_sv;
     else
         %do nothing
     end
@@ -20,9 +20,11 @@ function cost=costFunc(U0,U,rmpcProps)
             u=U(i,:);
             if i==1
                 deltaU=u(1,1)-U0(1,1);
-                stage_cost(i,1)=(w_U*(u(1,1))^2)+(w_sv*u(1,2))+(w_deltaU*(deltaU)^2);
+%                 stage_cost(i,1)=(w_U*(u(1,1))^2)+(w_sv*u(1,2))+(w_deltaU*(deltaU)^2);
+                stage_cost(i,1)=(w_U*(u(1,1))^2)+(w_deltaU*(deltaU)^2);
             else
                 deltaU=u(1,1)-U(i-1,1);
+%                 stage_cost(i,1)=(w_U*(u(1,1))^2)+(w_sv*u(1,2))+w_deltaU*(deltaU)^2;
                 stage_cost(i,1)=(w_U*(u(1,1))^2)+(w_sv*u(1,2))+w_deltaU*(deltaU)^2;
             end
     end
