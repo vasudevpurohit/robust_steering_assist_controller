@@ -25,7 +25,7 @@ function [u_ctrl,sv] = steerAssistController(x0,U0,rmpcProps,vehProps,driverProp
     x0(6,1)=X;  (global frame),'
     x0(7,1)=Y;  (global frame)
     %}
-    U = fmincon(@(U)costFunc(U0,U,rmpcProps),U0,[],[],[],[],lb,ub,@(U)safetyConstraints_euler(x0,U,driverProps,vehProps,rmpcProps,refTraj),options);
+    U = fmincon(@(U)costFunc_2(x0,U0,U,rmpcProps,vehProps,driverProps,refTraj),U0,[],[],[],[],lb,ub,[],options);
     %U=u;sv over the horizon
     u_ctrl=U(1,1);
     sv=U(1,2);

@@ -1,25 +1,21 @@
-%{
-This function computes firstly computes the safety constraints and then
-imposes a constraint over the permissible safe values. The constraints are
-on the four corners of the vehicle to remain within the bounds of the lane,
-and the slip angle to stay within the linear region. Both these constraints
-are implemented as inequality constraints. Equality constraints remain
-empty. The integration carried out is simple by forward euler. Obstacle is
-defined in terms of a Polyhedron. Distance between point and set is used to
-evaluate how close the point gets to the obstacle.
-%}
-function [c,ceq]=safetyConstraints_euler(x0,U,driverProps,vehProps,rmpcProps,refTraj)
-    persistent time_horizon time_step V a b n obstacle
+function cost=costFunc_2(x0,U0,U,rmpcProps,vehProps,driverProps,refTraj)
+    %{
+    Calculates the cost over the horizon. The U is a matrix over the
+    horizon with each row containing the u and epsilon values needed to
+    calculate the cost. U0 is used to calculate the delta at the very first
+    time step
+    %}
+    persistent n N w_deltaU w_U w_sv w_alpha w_obstacle w_lane a b V obstacle
     persistent x_fr x_fl x_rr x_rl y_fr y_fl y_rr y_rl
-    %extract the rmpc properties -- horizon and time_interval
     if isempty(n)
-        %initializing the MPT toolbox
         n=0;
-        time_horizon=rmpcProps.time_horizon;
-        time_step=rmpcProps.time_step;
-        V=vehProps.V;
-        a=vehProps.a;
-        b=vehProps.b;
+        N=rmpcProps.N;
+        w_deltaU=rmpcProps.w_deltaU;
+        w_U=rmpcProps.w_U;
+        w_sv=rmpcProps.w_sv;
+        w_alpha=rmpcProps.w_alpha;
+        w_obstacle=rmpcProps.w_obstacle;
+        w_lane=rmpcProps.w_lane;
         x_fr=vehProps.footprint.x_fr;
         x_fl=vehProps.footprint.x_fl;
         x_rr=vehProps.footprint.x_rr;
@@ -28,15 +24,16 @@ function [c,ceq]=safetyConstraints_euler(x0,U,driverProps,vehProps,rmpcProps,ref
         y_fl=vehProps.footprint.y_fl;
         y_rr=vehProps.footprint.y_rr;
         y_rl=vehProps.footprint.y_rl;
+        a=vehProps.a;
+        b=vehProps.b;
+        V=vehProps.V;
         obstacle=Polyhedron('A',[1 0;-1 0;0 1;0 -1],'b',[75;-35;1.75;0.75]);
     else
         %do nothing
     end
-    %setting up the ode problem and solving it over the horizon
-    tspan=(0:time_step:time_horizon)';
-    tspan=tspan(2:end);
+    
+    stage_cost=zeros(N,1);
     x=stateDynamics(x0,U,driverProps,vehProps,rmpcProps,refTraj);
-    %calculating the slip angle
     beta=x(2:end,1);
     r=x(2:end,2);
     delta=x(2:end,3)+U(:,1);
@@ -48,9 +45,9 @@ function [c,ceq]=safetyConstraints_euler(x0,U,driverProps,vehProps,rmpcProps,ref
     %slip angle over the horizon
     alpha_fr=beta+(a/V)*r-(delta);
     alpha_rr=beta-(b/V)*r;
-    slip_angle_limit=[-(4*pi/180)*ones(length(tspan),1)-sv;(4*pi/180)*ones(length(tspan),1)+sv];
-    c_alpha=[-alpha_fr;alpha_fr;-alpha_rr;alpha_rr]-[slip_angle_limit;slip_angle_limit];
-    %four corners over the horizon
+    alpha_cost=sum((max(0,(alpha_fr-(4*pi/180)))).^2+(max(0,((-4*pi/180)-alpha_fr))).^2+(max(0,(alpha_rr-(4*pi/180)))).^2+(max(0,((-4*pi/180)-alpha_rr))).^2);
+    
+    %four corners of the vehicle
     x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
     x_fl_horizon=x_fl*cos(psi)-y_fl*sin(psi)+X;
     x_rr_horizon=x_rr*cos(psi)-y_rr*sin(psi)+X;
@@ -63,15 +60,24 @@ function [c,ceq]=safetyConstraints_euler(x0,U,driverProps,vehProps,rmpcProps,ref
     corners(2,:)=[y_fr_horizon' y_fl_horizon' y_rr_horizon' y_rl_horizon'];
     for i = (1:4*length(x_fr_horizon))
         distanceStruct=obstacle.distance(corners(:,i));
-        corner_distances(i,1)=(distanceStruct.dist>0)*(distanceStruct.dist)+(distanceStruct.dist==0)*(-1.0);
+        corner_distances(i,1)=(distanceStruct.dist);
     end
-    %distance from the lane boundaries
-    c_lane=[([y_fr_horizon;y_fl_horizon;y_rr_horizon;y_rl_horizon]-5);(-[y_fr_horizon;y_fl_horizon;y_rr_horizon;y_rl_horizon]-1)];
-    c_corners=-corner_distances;
-    c=[c_alpha;c_corners;c_lane];
-    %creating the c-matrix for inequality constraints
-    %no equality constraints
-    ceq=[];
+    obstacle_cost=sum(1/max(1e-3,corner_distances));
+
+    %corners between the lane lines
+    lane_cost=sum((max(0,(corners(2,:)'-5.0))).^2+(max(0,(-1.0-(corners(2,:)')))).^2);
+
+    for i=(1:N-1)
+            u=U(i,:);
+            if i==1
+                deltaU=u(1,1)-U0(1,1);
+                stage_cost(i,1)=(w_U*(u(1,1))^2)+(w_sv*u(1,2))+(w_deltaU*(deltaU)^2);
+            else
+                deltaU=u(1,1)-U(i-1,1);
+                stage_cost(i,1)=(w_U*(u(1,1))^2)+(w_sv*u(1,2))+w_deltaU*(deltaU)^2;
+            end
+    end
+    cost=sum(stage_cost,1)+w_alpha*alpha_cost+w_obstacle*obstacle_cost+w_lane*lane_cost;
 end
 
 %{

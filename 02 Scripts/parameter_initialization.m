@@ -1,6 +1,7 @@
 tbxmanager restorepath
 mpt_init
-% x`
+clear
+clc
 %main script that populates all the parameters neccessary to run the model
 %vehicle properties
 vehProps.m=1550;
@@ -37,6 +38,9 @@ rmpcProps.ub=[0.1*ones(rmpcProps.N,1) 1e-2*ones(rmpcProps.N,1)]; %decision varia
 rmpcProps.w_deltaU=1.0;
 rmpcProps.w_U=1.0;
 rmpcProps.w_sv=50.0;
+rmpcProps.w_alpha=30.0;
+rmpcProps.w_obstacle=50.0;
+rmpcProps.w_lane=30.0;
 %reference trajectory properties
 load('refTraj.mat');
 %% checking results
