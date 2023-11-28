@@ -5,7 +5,7 @@ function cost=costFunc_2(x0,U0,U,rmpcProps,vehProps,driverProps,refTraj)
     calculate the cost. U0 is used to calculate the delta at the very first
     time step
     %}
-    persistent n N w_deltaU w_U w_sv w_alpha w_obstacle w_lane a b V obstacle
+    persistent n N w_deltaU w_U w_sv w_alpha w_obstacle w_lane a b V obstacle upper_lane
     persistent x_fr x_fl x_rr x_rl y_fr y_fl y_rr y_rl
     if isempty(n)
         n=0;
@@ -28,6 +28,7 @@ function cost=costFunc_2(x0,U0,U,rmpcProps,vehProps,driverProps,refTraj)
         b=vehProps.b;
         V=vehProps.V;
         obstacle=Polyhedron('A',[1 0;-1 0;0 1;0 -1],'b',[75;-35;1.75;0.75]);
+        upper_lane=Polyhedron('A',[1 0;0 1;-1 0;0 -1],'b',[80;6;10;-5]);
     else
         %do nothing
     end
@@ -45,7 +46,8 @@ function cost=costFunc_2(x0,U0,U,rmpcProps,vehProps,driverProps,refTraj)
     %slip angle over the horizon
     alpha_fr=beta+(a/V)*r-(delta);
     alpha_rr=beta-(b/V)*r;
-    alpha_cost=sum((max(0,(alpha_fr-(4*pi/180)))).^2+(max(0,((-4*pi/180)-alpha_fr))).^2+(max(0,(alpha_rr-(4*pi/180)))).^2+(max(0,((-4*pi/180)-alpha_rr))).^2);
+%     alpha_cost=sum((max(0,(alpha_fr-(4*pi/180)))).^2+(max(0,((-4*pi/180)-alpha_fr))).^2+(max(0,(alpha_rr-(4*pi/180)))).^2+(max(0,((-4*pi/180)-alpha_rr))).^2);
+    alpha_cost=0.0;
     
     %four corners of the vehicle
     x_fr_horizon=x_fr*cos(psi)-y_fr*sin(psi)+X;
@@ -58,14 +60,15 @@ function cost=costFunc_2(x0,U0,U,rmpcProps,vehProps,driverProps,refTraj)
     y_rl_horizon=x_rl*sin(psi)+y_rl*cos(psi)+Y;
     corners(1,:)=[x_fr_horizon' x_fl_horizon' x_rr_horizon' x_rl_horizon'];
     corners(2,:)=[y_fr_horizon' y_fl_horizon' y_rr_horizon' y_rl_horizon'];
-    for i = (1:4*length(x_fr_horizon))
-        distanceStruct=obstacle.distance(corners(:,i));
-        corner_distances(i,1)=(distanceStruct.dist);
-    end
-    obstacle_cost=sum(1/max(1e-3,corner_distances));
 
-    %corners between the lane lines
-    lane_cost=sum((max(0,(corners(2,:)'-5.0))).^2+(max(0,(-1.0-(corners(2,:)')))).^2);
+    for i = (1:4*length(x_fr_horizon))
+        obstacle_distanceStruct=obstacle.distance(corners(:,i));
+        lane_distanceStruct=upper_lane.distance(corners(:,i));
+        obstacle_distances(i,1)=(obstacle_distanceStruct.dist);
+        lane_distances(i,1)=(lane_distanceStruct.dist);
+    end
+    obstacle_cost=sum(exp(-obstacle_distances));
+    lane_cost=sum(exp(-10.0*lane_distances));
 
     for i=(1:N-1)
             u=U(i,:);

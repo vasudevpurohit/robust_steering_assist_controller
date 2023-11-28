@@ -14,7 +14,7 @@ function [u_ctrl,sv] = steerAssistController(x0,U0,rmpcProps,vehProps,driverProp
     U0=U0';
     U0=repmat(U0,N,1);
     %defining the options for the fmincon solver
-    options = optimoptions('fmincon','Display','iter-detailed','Algorithm','interior-point','MaxIterations',100,'MaxFunctionEvaluations',1e6);
+    options = optimoptions('fmincon','Display','off','Algorithm','interior-point','MaxIterations',100,'MaxFunctionEvaluations',1e6);
     %main fmincon call
     %{
     x0(1,1)=beta
@@ -25,7 +25,7 @@ function [u_ctrl,sv] = steerAssistController(x0,U0,rmpcProps,vehProps,driverProp
     x0(6,1)=X;  (global frame),'
     x0(7,1)=Y;  (global frame)
     %}
-    U = fmincon(@(U)costFunc_2(x0,U0,U,rmpcProps,vehProps,driverProps,refTraj),U0,[],[],[],[],lb,ub,[],options);
+    U = fmincon(@(U)costFunc_3(x0,U0,U,rmpcProps,vehProps,driverProps,refTraj),U0,[],[],[],[],lb,ub,[],options);
     %U=u;sv over the horizon
     u_ctrl=U(1,1);
     sv=U(1,2);

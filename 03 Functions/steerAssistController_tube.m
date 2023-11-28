@@ -1,0 +1,32 @@
+%{
+This function is a generalized formulation for an MPC with the optimization
+carried out using fmincon
+%}
+function [u_ctrl,sv] = steerAssistController_tube(x0,U0,rmpcProps,vehProps,driverProps,refTraj)
+    %extracting the controller settings
+%     Aieq=rmpcProps.Aieq;
+%     Bieq=rmpcProps.Bieq;
+%     Aeq=rmpcProps.Aeq;
+%     Beq=rmpcProps.Beq;
+    lb=rmpcProps.lb;
+    ub=rmpcProps.ub;
+    N=rmpcProps.N;
+    U0=U0';
+    U0=repmat(U0,N,1);
+    %defining the options for the fmincon solver
+    options = optimoptions('fmincon','Display','off','Algorithm','interior-point','MaxIterations',100,'MaxFunctionEvaluations',1e6);
+    %main fmincon call
+    %{
+    x0(1,1)=beta
+    x0(2,1)=r
+    x0(3,1)=delta
+    x0(4,1)=psi
+    x0(5,1)=delta_y;
+    x0(6,1)=X;  (global frame),'
+    x0(7,1)=Y;  (global frame)
+    %}
+    U = fmincon(@(U)costFunc_3_tube(x0,U0,U,rmpcProps,vehProps,driverProps,refTraj),U0,[],[],[],[],lb,ub,[],options);
+    %U=u;sv over the horizon
+    u_ctrl=U(1,1);
+    sv=U(1,2);
+end
