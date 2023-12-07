@@ -85,22 +85,26 @@ axis equal
 obstacle=Polyhedron('A',[1 0;-1 0;0 1;0 -1],'b',[75;-35;1.75;0.75]);
 upper_lane=Polyhedron('A',[1 0;0 1;-1 0;0 -1],'b',[80;6;10;-5]);
 lower_lane=Polyhedron('A',[1 0;0 1;-1 0;0 -1],'b',[80;-1;10;2]);
-plot(refTraj.X,refTraj.Y,'r--');
+plot(refTraj.X,refTraj.Y,'r--','LineWidth',2.0);
 hold on
 plot(driverOnly.plant(:,6),driverOnly.plant(:,7),'m-');
 for i = (1:5:length(driverOnly.footprint))
     patch([driverOnly.footprint(i,1) driverOnly.footprint(i,2) driverOnly.footprint(i,4) driverOnly.footprint(i,3)],[driverOnly.footprint(i,5) driverOnly.footprint(i,6) driverOnly.footprint(i,8) driverOnly.footprint(i,7)],'m');
     alpha(0.2);
 end
-plot([-10;80],[2;2],'ko--','LineWidth',2.5);
-plot([-10;80],[-1;-1],'ko--','LineWidth',2.5);
-plot([-10;80],[5;5],'ko--','LineWidth',2.5);
+plot([-10;80],[2;2],'k--','LineWidth',0.5);
+plot([-10;80],[-1;-1],'k--','LineWidth',2.5);
+plot([-10;80],[5;5],'k--','LineWidth',2.5);
+plot([-10;80],[-0.9;-0.9],'b--','LineWidth',1.5);
+plot([-10;80],[4.5;4.5],'b--','LineWidth',1.5);
+plot([35;75],[1.925;1.925],'b--','LineWidth',1.5);
 plot(obstacle,'Color','r');
 plot(upper_lane,'Color','y');
 plot(lower_lane,'Color','y');
+alpha(0.2);
 % plot(mpc_control.X,mpc_control.Y,'k-');
 % plot(mpc_control_tube.X_a,mpc_control_tube.Y_a,'b-');
-% rectangle('Position',[35 -0.75 40 0.75+1.75],'FaceColor',[0 0 1.0],'EdgeColor','b');
+% % rectangle('Position',[35 -0.75 40 0.75+1.75],'FaceColor',[0 0 1.0],'EdgeColor','b');
 % for i = (1:2:length(mpc_control_tube.footprint_a))
 % %     patch([mpc_control.footprint(i,1) mpc_control.footprint(i,2) mpc_control.footprint(i,4) mpc_control.footprint(i,3)],[mpc_control.footprint(i,5) mpc_control.footprint(i,6) mpc_control.footprint(i,8) mpc_control.footprint(i,7)],'black');
 %     patch([mpc_control_tube.footprint_a(i,1) mpc_control_tube.footprint_a(i,2) mpc_control_tube.footprint_a(i,4) mpc_control_tube.footprint_a(i,3)],[mpc_control_tube.footprint_a(i,5) mpc_control_tube.footprint_a(i,6) mpc_control_tube.footprint_a(i,8) mpc_control_tube.footprint_a(i,7)],'blue');
@@ -109,6 +113,7 @@ plot(lower_lane,'Color','y');
 % ylim([-2 6]);
 xlabel('X');
 ylabel('Y');
+title('Vehicle Trajectory - Single Obstacle');
 % legend("Reference Trajectory","Vehicle Trajectory",'Location','southoutside');
 %% checking the spread of the trajectories between the tube based and nominal MPC
 for i = (1:10)
